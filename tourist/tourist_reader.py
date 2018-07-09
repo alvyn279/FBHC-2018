@@ -19,24 +19,23 @@ def main():
     We only iterate once through the .txt file
     """
     total_campuses=0
+    campus_count=0
 
     with open(sys.argv[1], 'r') as fh:
-        print("File successfully opened")
+        #print("File successfully opened")
         analyzing_block=False
         popularity_list=[]
         attractions, attractions_to_visit, total_visits = 0,0,0 #N,K,V
         
         for i, line in enumerate(fh):
             if " " in line:
-                print(popularity_list)
                 if analyzing_block and (len(popularity_list)==attractions):
-                    print("Visiting campus...")
-                    visit(attractions, attractions_to_visit, total_visits)
+                    campus_count+=1
+                    visit(attractions, attractions_to_visit, total_visits, popularity_list, campus_count)
                     analyzing_block=False
                     popularity_list=[]
                     attractions, attractions_to_visit, total_visits = 0,0,0 #N,K,V
 
-                print("Starting block found!")
                 analyzing_block=True
 
                 s_list = line.split(' ')
@@ -51,21 +50,51 @@ def main():
                 continue
         
         #One additional visit (last case, undetected by ending check)
-        #TODO Improve logic here
+        #TODO Improve useless duplication here
         if analyzing_block and (len(popularity_list)==attractions):
-            print(popularity_list)
-            print("Visiting campus...")
-            visit(attractions, attractions_to_visit, total_visits)
-
-        print("Total number of campuses visited: " + str(total_campuses))
-    
-
+            campus_count+=1
+            visit(attractions, attractions_to_visit, total_visits, popularity_list, campus_count)
     return
 
-def visit(N,K,V):
+
+def visit(N,K,V, p_list, campus):
     """
     Executes the logic for the series of visits for each single campus
+    Logic:
+        - Follow circular array concept
+        - Use modulo operator to determine indices
     """
+    last_index = ((K*V))%N-1 #index at which we will end up after visiting many times (takes in consideration times visited)
+    last_run_visited = []
+    ordered_last_run = []
+
+    for i in range(0,K):
+        #use negative indexing
+        last_run_visited.append(p_list[last_index-i])
+    
+    #print(last_run_visited)
+    
+    #now order them in popularity
+    if (len(last_run_visited)==1):
+        ordered_last_run = last_run_visited
+    else:
+        for attraction in p_list: 
+            #can only do this because the attractions are unique
+            if attraction in last_run_visited:
+                ordered_last_run.append(attraction)
+    
+    print_to_file(ordered_last_run, campus)
+    return
+
+def print_to_file(final_list, campus):
+    """
+    Prints the output in correct format
+    """
+    attractions_str = ' '.join(str(e) for e in final_list)
+
+    with open("output.txt", "a") as text_file:
+        text_file.write("Case #{}: {}\n".format(campus, attractions_str))
+    
     return
 
 if __name__ == "__main__":
