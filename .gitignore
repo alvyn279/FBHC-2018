@@ -107,3 +107,4 @@ venv.bak/
 .vscode
 
 tourist/output.txt
+tourist/tourist.txt
